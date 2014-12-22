@@ -1,0 +1,383 @@
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+/**
+ * This class represents a BST (Binary Search Tree)
+ *
+ * @author Adway
+ * @version 1.0
+ *
+ * @param <T> Generic type
+ */
+
+public class BST<T extends Comparable<T>> implements BSTInterface<T> {
+    private Node<T> root = null;
+    private int size = 0;
+
+    @Override
+    public void add(T data) {
+        if (data == null) {
+            throw new IllegalArgumentException("null passed");
+        } else {
+            add(root, data);
+        }
+    }
+
+    /**
+     * This is a helper method that, recursively
+     * adds the data to the Binary Tree
+     *
+     *
+     * @param data  The generic data to be added
+     * @param node  current node
+     * @return void return (does not return anything)
+     */
+
+    private void add(Node<T> node, T data) {
+        if (root == null) {
+            root = new Node<T>(data);
+            size++;
+
+        } else if (((node.getData().compareTo(data) > 0))
+                && (node.getLeft() == null)) {
+            node.setLeft(new Node<T>(data));
+            size++;
+
+        } else if (((node.getData().compareTo(data) <= 0))
+                && (node.getRight() == null)) {
+            node.setRight(new Node<T>(data));
+            size++;
+
+        } else if (node.getData().compareTo(data) > 0) {
+            add(node.getLeft(), data);
+
+        } else if (node.getData().compareTo(data) <= 0) {
+            add(node.getRight(), data);
+        }
+    }
+
+
+
+
+    @Override
+    public T remove(T data) {
+        if (data == null) {
+            throw new IllegalArgumentException("You are trying"
+                + "to remove null data");
+        } else {
+            T tempData = get(data);
+            if (tempData != null) {
+                root = remove(root, data);
+                size--;
+            }
+            return tempData;
+        }
+    }
+
+    /**
+     * This is a helper method that, recursively
+     * removes the data from the Binary Tree
+     * There are generally 3 ways to do this:
+     * 1: the data is a leaf.  In this case, simply remove it
+     * 2: the data has one child.  In this case, simply replace it with its
+     * child, then remove the child.
+     * 3: the data has 2 children.  There are generally two approaches:
+     * replacing the data with either the next smallest element in the tree
+     * (commonly called the predecessor).
+     *
+     * It returns the node that had the data to be removed.
+     * @param data  The generic data to be removed
+     * @param node  current node
+     * @return node of the data being removed
+     */
+
+    private Node<T> remove(Node<T> node, T data) {
+        if (node == null) {
+            size = 0;
+            return null;
+
+        } else if ((node.getData().compareTo(data) > 0)) {
+            node.setLeft(remove(node.getLeft(), data));
+
+        } else if ((node.getData().compareTo(data) < 0)) {
+            node.setRight(remove(node.getRight(), data));
+
+        } else if ((node.getLeft() == null) && (node.getRight() == null)) {
+            Node<T> temp = node;
+            node = null;
+            size--;
+            return temp;
+
+        } else if ((node.getLeft() != null) && (node.getRight() != null)) {
+            Node<T> pre = getPredecessor(node.getLeft());
+            node.setData(pre.getData());
+            node.setRight(remove(node.getRight(), pre.getData()));
+            size--;
+
+        } else if (node.getLeft() != null) {
+            node = node.getLeft();
+
+        } else if (node.getRight() != null) {
+            node = node.getRight();
+        }
+        return node;
+    }
+
+    /**
+     * This is a helper method that, recursively
+     * returns the next smallest
+     * element in the Binary Tree. This element
+     * is called the predecessor.
+     *
+     * @param node  current node
+     * @return node that is the second smallest
+     * respective to the one in consideration
+     * of type node
+     */
+
+    private Node<T> getPredecessor(Node<T> node) {
+        if (node == null) {
+            return node;
+
+        } else {
+            if (node.getRight() == null) {
+                return node;
+            }
+            return getPredecessor(node.getRight());
+        }
+    }
+
+    @Override
+    public T get(T data) {
+        if (isEmpty()) {
+            return null;
+        }
+        if (data == null) {
+            throw new IllegalArgumentException("You passed in a null argument");
+
+        } else if (root.getData().equals(data)) {
+            return root.getData();
+
+        } else if (get(root, data) != null) {
+            return get(root, data).getData();
+        }
+        return null;
+    }
+
+    /**
+     * This method returns a boolean to check if the BST is empty or not.
+     *
+     * @param It takes no parameters
+     * @return boolean to say if the list is empty or not
+    */
+    private boolean isEmpty() {
+        if (root != null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Recursively traverses the tree and returns the data that is being
+     * searched for. It returns a null if the element is not found.
+     *
+     * @param data  data being searched for
+     * @param node  node to start at
+     * @return  data found that matches given data
+     *
+     */
+
+    private Node<T> get(Node<T> node, T data) {
+        if (node == null) {
+            return null;
+        }
+
+        if (node.getData().compareTo(data) == 0) {
+            return node;
+        } else if (node.getData().compareTo(data) < 0) {
+            return get(node.getRight(), data);
+        } else {
+            return get(node.getLeft(), data);
+        }
+    }
+
+    @Override
+    public boolean contains(T data) {
+        if (isEmpty()) {
+            return false;
+        }
+
+        if (data == null) {
+            throw new IllegalArgumentException("You passed"
+                + "in a null as an argument");
+        }
+        return get(data) != null;
+    }
+
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public List<T> preorder() {
+        List<T> list = (List<T>) new ArrayList<T>();
+        preorder(list, root);
+        return list;
+    }
+
+    /**
+     * It is a helper method, that recursively adds the
+     * given node's data, in a  preorder style.
+     *
+     * First is the data in the node, then the data
+     * on the left, followed by the data on
+     * the right in pre-order. It compies this to a list.
+     *
+     * @param current node
+     * @param list Data is being added to this list.
+     * @return void return (does not return anything)
+     */
+
+    private void preorder(List<T> list, Node<T> node) {
+        if (node != null) {
+            list.add(node.getData());
+            preorder(list, node.getLeft());
+            preorder(list, node.getRight());
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public List<T> postorder() {
+        List<T> list = (List<T>) new ArrayList<T>();
+        postorder(list, root);
+        return list;
+    }
+
+    /**
+     * It is a helper method, that recursively
+     * adds the given node's data, in a  postorder style.
+     *
+     * First is the data on the left, then
+     * data in the node, followed by the data on
+     * the right in post-order. It compies this to a list.
+     *
+     * @param current node
+     * @param list Data is being added to this list.
+     * @return void return (does not return anything)
+     */
+
+    private void postorder(List<T> list, Node<T> node) {
+        if (node != null) {
+            postorder(list, node.getLeft());
+            postorder(list, node.getRight());
+            list.add(node.getData());
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public List<T> inorder() {
+        List<T> list = (List<T>) new ArrayList<T>();
+        inorder(list, root);
+        return list;
+    }
+
+    /**
+     * It is a helper method, that recursively adds
+     * the given node's data, in an inorder style.
+     *
+     * First is the data on the left, then data in the node,
+     * followed by the data on
+     * the right in in-order. It compies this to a list.
+     *
+     * @param current node
+     * @param list Data is being added to this list.
+     * @return void return (does not return anything)
+     */
+
+    private void inorder(List<T> list, Node<T> node) {
+        if (node != null) {
+            inorder(list, node.getLeft());
+            list.add(node.getData());
+            inorder(list, node.getRight());
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public List<T> levelorder() {
+        List<T> list = (List<T>) new ArrayList<T>();
+        levelorder(list, root);
+        return list;
+    }
+
+    /**
+     * It is a helper method, that recursively adds
+     * the given node's data, in an inorder style.
+     *
+     * All the elements are compied this to a queue, level wise.
+     *
+     * @param current node
+     * @param list Data is being added to this list.
+     * @return void return (does not return anything)
+     */
+
+    @SuppressWarnings("unchecked")
+    private void levelorder(List<T> list, Node<T> node) {
+        Queue<Node<T>> queue = new LinkedList<Node<T>>();
+        if (node != null) {
+            queue.add(node);
+            while (!queue.isEmpty()) {
+                Node<T> queueNode = queue.peek();
+                if (queueNode.getLeft() != null) {
+                    queue.add(queueNode.getLeft());
+                }
+                if (queueNode.getRight() != null) {
+                    queue.add(queueNode.getRight());
+                }
+                list.add(queue.remove().getData());
+            }
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public void clear() {
+        root = null;
+        size = 0;
+    }
+
+    @Override
+    public int height() {
+        return height(root);
+    }
+
+    /**
+     * A helper method, that helps calculating the height of the tree.
+     * The height of leaf nodes are taken as zero.
+     * @param current node
+     * @return an int representing the height of the binary tree
+     */
+
+    private int height(Node<T> root) {
+        if (root == null) {
+            return -1;
+        } else {
+            return 1 + Math.max(height(root.getLeft()),
+                height(root.getRight()));
+        }
+    }
+
+    @Override
+    public Node<T> getRoot() {
+        return root;
+    }
+}
